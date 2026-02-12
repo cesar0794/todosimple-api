@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.lucasangelo.todosimple.security.JWTAuthenticationFilter;
+import com.lucasangelo.todosimple.security.JWTAuthorizationFilter;
 import com.lucasangelo.todosimple.security.JWTUtil;
 
 @Configuration
@@ -32,6 +34,9 @@ public class SecurityConfig {
         // Injetamos a configuração de autenticação do Spring Boot
         @Autowired
         private AuthenticationConfiguration authenticationConfiguration;
+
+        @Autowired
+        private UserDetailsService userDetailsService;
 
         private static final String[] PUBLIC_MATCHERS = {
                         "/"
@@ -57,6 +62,8 @@ public class SecurityConfig {
 
                 // Passamos o authenticationManager recuperado para o filtro
                 http.addFilter(new JWTAuthenticationFilter(authenticationManager, this.jwtUtil));
+                http.addFilter(new JWTAuthorizationFilter(authenticationManager, this.jwtUtil,
+                                this.userDetailsService));
 
                 http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
